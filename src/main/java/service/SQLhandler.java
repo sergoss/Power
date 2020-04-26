@@ -43,7 +43,10 @@ public class SQLhandler {
             user = null;
             while (resultSet.next()) {
                 if (chatId == resultSet.getLong(2)) {
-                    user = new User(resultSet.getInt(1),resultSet.getLong(2), resultSet.getInt(3), resultSet.getBoolean(4));
+                    user = new User(resultSet.getInt(1),
+                            resultSet.getLong(2),
+                            resultSet.getInt(3),
+                            resultSet.getBoolean(4));
                     break;
                 }
             }
@@ -59,11 +62,12 @@ public class SQLhandler {
             long chatId = user.getChatId();
             int stateId = user.getStateId();
             boolean notify = user.getNotify();
-            String query = "INSERT INTO user (chat_id, state_id, notify) VALUES ((?), (?), (?))";
+            String query = "INSERT INTO user (chat_id, state_id, notify /*order_id*/) VALUES ((?), (?), (?)/*, (?)*/)";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setLong(1, chatId);
             preparedStatement.setInt(2, stateId);
             preparedStatement.setBoolean(3, notify);
+//            preparedStatement.setInt(4, user.getOrder().getId());
 //        resultSet = preparedStatement.executeQuery();
 //        if (resultSet.next()) return;
             preparedStatement.executeUpdate();
@@ -84,8 +88,9 @@ public class SQLhandler {
 
     public static void addNewOrder(Order order) {
         try {
-            preparedStatement = connection.prepareStatement("INSERT INTO 'order' (user_id) VALUES (?)");
-            preparedStatement.setInt(1, order.getOrderUser().getId());
+            preparedStatement = connection.prepareStatement("INSERT INTO 'order' (user_chat_id), (order_details) VALUES ((?), (?))");
+            preparedStatement.setLong(1, order.getOrderUser().getChatId());
+            preparedStatement.setInt(2, order.getOrderDetails());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,11 +99,11 @@ public class SQLhandler {
 
     public static void updateOrder(Order order) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE order SET city_id = ?, district_id, product_id, payment_id  WHERE id = " + order.getId());
+            preparedStatement = connection.prepareStatement("UPDATE 'order' SET city_id = ?, district_id, product_id, payment_id  WHERE id = " + order.getId());
             preparedStatement.setInt(1, order.getOrderCity().getId());
             preparedStatement.setInt(2, order.getOrderDistrict().getId());
-            preparedStatement.setInt(3, order.getOrderCity().getId());
-            preparedStatement.setInt(4, order.getOrderCity().getId());
+            preparedStatement.setInt(3, order.getOrderProduct().getId());
+            preparedStatement.setInt(4, order.getOrderPayment().getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -134,14 +139,27 @@ public class SQLhandler {
     public static List<Product> getProductsList() {
         List<Product> products = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT name, price, weight, city_id, district_id FROM district");
+            resultSet = statement.executeQuery("SELECT id, name, price, weight, city_id, district_id FROM product");
             while (resultSet.next()) {
-                products.add(new Product(resultSet.getString(1), resultSet.getInt(2), resultSet.getDouble(3), resultSet.getInt(4), resultSet.getInt("district_id")));
+                products.add(new Product(resultSet.getInt(1), resultSet.getString(2), resultSet.getInt(3), resultSet.getDouble(4), resultSet.getInt(5), resultSet.getInt("district_id")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return products;
+    }
+
+    public static List<Payment> getPaymentsList() {
+        List<Payment> payments = new ArrayList<>();
+        try {
+            resultSet = statement.executeQuery("SELECT id, name, details  FROM payment");
+            while (resultSet.next()) {
+                payments.add(new Payment(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return payments;
     }
 //    private String check(String first_name, String last_name, int user_id, String username) {
 //        try {

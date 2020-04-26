@@ -8,7 +8,6 @@ public class BotContext {
     private Bot bot;
     private User user;
     private String input;
-    private Order order;
 
     public static BotContext of(Bot bot, User user, String text) {
         return new BotContext(bot, user, text);
@@ -18,6 +17,7 @@ public class BotContext {
         this.bot = bot;
         this.user = user;
         this.input = input;
+
     }
 
     public User getUser() {
@@ -26,14 +26,6 @@ public class BotContext {
 
     public Bot getBot() {
         return bot;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
     }
 
     public String getInput() {

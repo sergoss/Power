@@ -8,7 +8,8 @@ public class Product extends MenuItem {
     private Integer cityId;
     private Integer districtId;
 
-    public Product(String name, Integer price, Double weight, Integer cityId, Integer districtId) {
+    public Product(Integer id, String name, Integer price, Double weight, Integer cityId, Integer districtId) {
+        this.id = id;
         this.name = name;
         this.price = price;
         this.weight = weight;

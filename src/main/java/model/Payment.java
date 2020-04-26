@@ -5,7 +5,8 @@ public class Payment extends MenuItem {
     private String name;
     private String paymentDetails;
 
-    public Payment(String name, String paymentDetails) {
+    public Payment(Integer id, String name, String paymentDetails) {
+        this.id = id;
         this.name = name;
         this.paymentDetails = paymentDetails;
     }

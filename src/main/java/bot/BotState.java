@@ -9,8 +9,9 @@ import service.SQLhandler;
 
 public enum BotState {
 
-    START (false) {
+    START() {
         private BotState next;
+
         @Override
         public void enter(BotContext context) {
             System.out.println("Start");
@@ -18,42 +19,44 @@ public enum BotState {
             sendMessage(context, "Hello");
         }
 
-        @Override
-        public void handleInput(BotContext context) {
-            if (context.getInput().equals("/start")) {
-                next = CHOOSING_CITY;
-            }
-        }
+//        @Override
+//        public void handleInput(BotContext context) {
+//            if (context.getInput().equals("/start")) {
+////                context.getUser().setOrder(new Order(context.getUser()));
+////                SQLhandler.addNewOrder(context.getUser().getOrder());
+//                next = CHOOSING_CITY;
+//            }
+//        }
 
         @Override
         public BotState nextState() {
-            return next;
+            return CHOOSING_CITY;
         }
     },
 
     CHOOSING_CITY {
         private BotState next;
+
         @Override
         public void enter(BotContext context) {
             System.out.println("City");
-
             sendMessage(context, "Выбери город");
         }
+
         @Override
         public void handleInput(BotContext context) {
             String cityName = context.getInput();
             MenuItemListHandler<City> menuItemListHandler = new MenuItemListHandler(SQLhandler.getCitiesList());
             if (menuItemListHandler.checkMenuItemContains(cityName)) {
-                context.setOrder(new Order(context.getUser()));
-                SQLhandler.addNewOrder(context.getOrder());
                 City city = menuItemListHandler.getMenuItemByName(cityName);
-                context.getOrder().setOrderCity(city);
+                context.getUser().getOrder().setOrderCity(city);
                 next = CHOOSING_DISTRICT;
             } else {
                 sendMessage(context, "Empty message");
                 next = CHOOSING_CITY;
             }
         }
+
         @Override
         public BotState nextState() {
             return next;
@@ -75,13 +78,16 @@ public enum BotState {
             MenuItemListHandler<District> menuItemListHandler = new MenuItemListHandler(SQLhandler.getDistrictsList());
             if (menuItemListHandler.checkMenuItemContains(districtName)) {
                 District district = menuItemListHandler.getMenuItemByName(districtName);
-                context.getOrder().setOrderDistrict(district);
+                context.getUser().getOrder().setOrderDistrict(district);
                 next = CHOOSING_PRODUCT;
+            } else if (districtName.equals("В главное меню")) {
+                next = START;
             } else {
                 sendMessage(context, "Empty message");
                 next = CHOOSING_DISTRICT;
             }
         }
+
         @Override
         public BotState nextState() {
             return next;
@@ -89,6 +95,7 @@ public enum BotState {
     },
     CHOOSING_PRODUCT {
         private BotState next;
+
         @Override
         public void enter(BotContext context) {
             System.out.println("Product");
@@ -101,7 +108,7 @@ public enum BotState {
             MenuItemListHandler<Product> menuItemListHandler = new MenuItemListHandler(SQLhandler.getProductsList());
             if (menuItemListHandler.checkMenuItemContains(productName)) {
                 Product product = menuItemListHandler.getMenuItemByName(productName);
-                context.getOrder().setOrderProduct(product);
+                context.getUser().getOrder().setOrderProduct(product);
                 next = CHOOSING_PAYMENT;
             } else {
                 sendMessage(context, "Empty message");
@@ -117,20 +124,21 @@ public enum BotState {
 
     CHOOSING_PAYMENT {
         private BotState next;
+
         @Override
         public void enter(BotContext context) {
-            System.out.println("Product");
-            sendMessage(context, "Выбери товар");
+            System.out.println("Payment");
+            sendMessage(context, "Выбери платежку");
         }
 
         @Override
         public void handleInput(BotContext context) {
             String paymentName = context.getInput();
-            MenuItemListHandler<Payment> menuItemListHandler = new MenuItemListHandler(SQLhandler.getProductsList());
+            MenuItemListHandler<Payment> menuItemListHandler = new MenuItemListHandler(SQLhandler.getPaymentsList());
             if (menuItemListHandler.checkMenuItemContains(paymentName)) {
                 Payment payment = menuItemListHandler.getMenuItemByName(paymentName);
-                context.getOrder().setOrderPayment(payment);
-                SQLhandler.updateOrder(context.getOrder());
+                context.getUser().getOrder().setOrderPayment(payment);
+                SQLhandler.updateOrder(context.getUser().getOrder());
                 next = ORDER;
             } else {
                 sendMessage(context, "Empty message");
@@ -140,12 +148,13 @@ public enum BotState {
 
         @Override
         public BotState nextState() {
-            return START;
+            return next;
         }
     },
 
     ORDER {
         private BotState next;
+
         @Override
         public void enter(BotContext context) {
             System.out.println("Order");
@@ -169,21 +178,33 @@ public enum BotState {
     },
 
     CHECKING_PAY {
+        private BotState next;
         @Override
         public void enter(BotContext context) {
 
         }
 
         @Override
-        public BotState nextState() {
-            return null;
+        public void handleInput(BotContext context) {
+            String confirmOrder = context.getInput();
+            if (confirmOrder.equals("Я оплатил")) {
+                next = CHECKING_PAY;
+            } else if (confirmOrder.equals("Вернуться в главное меню")) {
+                next = START;
+            }
         }
-    }
-    ;
+
+
+        @Override
+        public BotState nextState() {
+            return START;
+        }
+    };
 
 
     private static BotState[] states;
     private boolean inputNeeded;
+
     public static BotState getInitialState() {
         return byId(0);
     }
@@ -221,7 +242,9 @@ public enum BotState {
     public void handleInput(BotContext context) {
 
     }
+
     public abstract void enter(BotContext context);
+
     public abstract BotState nextState();
 
 //    public void handleInput<T extends MenuItem> (BotContext context, String input) {

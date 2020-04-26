@@ -1,4 +1,8 @@
 package model;
 
-public abstract class MenuItem {
+public class MenuItem {
+//    private String name;
+    public String getName() {
+        return null;
+    }
 }

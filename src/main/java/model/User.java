@@ -2,12 +2,19 @@ package model;
 
 public class User extends MenuItem {
     private Integer id;
-    private String nick;
+//    private String nick;
     private Long chatId;
     private Integer stateId;
     private Boolean notify = false;
 
     public User() {
+    }
+
+    public User(Integer id, Long chatId, Integer stateId, Boolean notify) {
+        this.id = id;
+        this.chatId = chatId;
+        this.stateId = stateId;
+        this.notify = notify;
     }
 
     public User(Long chatId, Integer stateId) {
@@ -22,7 +29,7 @@ public class User extends MenuItem {
     }
 
     public User(String nick, Long chatId, Integer stateId, Boolean notify) {
-        this.nick = nick;
+//        this.nick = nick;
         this.chatId = chatId;
         this.stateId = stateId;
         this.notify = notify;
@@ -36,13 +43,13 @@ public class User extends MenuItem {
         this.id = id;
     }
 
-    public String getNick() {
-        return nick;
-    }
-
-    public void setNick(String nick) {
-        this.nick = nick;
-    }
+//    public String getNick() {
+//        return nick;
+//    }
+//
+//    public void setNick(String nick) {
+//        this.nick = nick;
+//    }
 
     public Long getChatId() {
         return chatId;

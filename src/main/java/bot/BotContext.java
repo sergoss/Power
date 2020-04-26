@@ -1,14 +1,17 @@
 package bot;
 
+import model.Order;
 import model.User;
+import service.SQLhandler;
 
 public class BotContext {
     private Bot bot;
     private User user;
     private String input;
+    private Order order;
 
-    public static BotContext of(Bot bot, User user, String input) {
-        return new BotContext(bot, user, input);
+    public static BotContext of(Bot bot, User user, String text) {
+        return new BotContext(bot, user, text);
     }
 
     private BotContext(Bot bot, User user, String input) {
@@ -25,7 +28,17 @@ public class BotContext {
         return bot;
     }
 
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
     public String getInput() {
         return input;
     }
+
+
 }

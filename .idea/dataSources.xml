@@ -7,5 +7,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\Mzheg\IdeaProjects\Power\src\power.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="power [2]" uuid="1566037b-1bbc-4ee1-ab4a-8aa6e3a3acda">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Mzheg\IdeaProjects\Power\power.db</jdbc-url>
+    </data-source>
   </component>
 </project>

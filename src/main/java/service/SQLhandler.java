@@ -1,6 +1,6 @@
 package service;
 
-import model.User;
+import model.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class SQLhandler {
         connection = DriverManager.getConnection("jdbc:sqlite:power.db");
     }
 
-    public static void createStatement() throws SQLException{
+    public static void createStatement() throws SQLException {
         statement = connection.createStatement();
     }
 
@@ -35,43 +35,114 @@ public class SQLhandler {
         return connection;
     }
 
-    public static User findUserByChatId(long chatId) throws SQLException {
-        resultSet = statement.executeQuery("SELECT chatId, stateId, notify FROM user WHERE chatId = " + chatId);
-//        User(String nick, Long chatId, Integer stateId, Boolean notify)
+    public static User findUserByChatId(long chatId) {
         User user = null;
-        while (resultSet.next()) {
-            if (chatId == resultSet.getLong(1)) {
-                user = new User (resultSet.getLong(1), resultSet.getInt(2), resultSet.getBoolean(3));
-                break;
+        try {
+            resultSet = statement.executeQuery("SELECT id, chat_id, state_id, notify FROM user WHERE chat_id = " + chatId);
+//        User(String nick, Long chatId, Integer stateId, Boolean notify)
+            user = null;
+            while (resultSet.next()) {
+                if (chatId == resultSet.getLong(2)) {
+                    user = new User(resultSet.getInt(1),resultSet.getLong(2), resultSet.getInt(3), resultSet.getBoolean(4));
+                    break;
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return user;
     }
 
-    public static void addNewUser(User user) throws SQLException {
-        if (user.equals(findUserByChatId(user.getChatId()))) return;
-        long chatId = user.getChatId();
-        int stateId = user.getStateId();
-        boolean notify = user.getNotify();
-        String query = "INSERT INTO user (chatId, stateId, notify) VALUES ((?), (?), (?))";
-        preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setLong(1, chatId);
-        preparedStatement.setInt(2, stateId);
-        preparedStatement.setBoolean(3, notify);
+    public static void addNewUser(User user) {
+        try {
+            if (user.equals(findUserByChatId(user.getChatId()))) return;
+            long chatId = user.getChatId();
+            int stateId = user.getStateId();
+            boolean notify = user.getNotify();
+            String query = "INSERT INTO user (chat_id, state_id, notify) VALUES ((?), (?), (?))";
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setLong(1, chatId);
+            preparedStatement.setInt(2, stateId);
+            preparedStatement.setBoolean(3, notify);
 //        resultSet = preparedStatement.executeQuery();
 //        if (resultSet.next()) return;
-        preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void updateUser(User user) throws SQLException {
-        preparedStatement = connection.prepareStatement("UPDATE user SET stateId = ? WHERE chatId = " + user.getChatId());
-        preparedStatement.setInt(1, user.getStateId());
-        preparedStatement.executeUpdate();
+    public static void updateUser(User user) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE user SET state_id = ? WHERE chat_id = " + user.getChatId());
+            preparedStatement.setInt(1, user.getStateId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    public static void addNewOrder(Order order) {
+        try {
+            preparedStatement = connection.prepareStatement("INSERT INTO 'order' (user_id) VALUES (?)");
+            preparedStatement.setInt(1, order.getOrderUser().getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static void updateOrder(Order order) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE order SET city_id = ?, district_id, product_id, payment_id  WHERE id = " + order.getId());
+            preparedStatement.setInt(1, order.getOrderCity().getId());
+            preparedStatement.setInt(2, order.getOrderDistrict().getId());
+            preparedStatement.setInt(3, order.getOrderCity().getId());
+            preparedStatement.setInt(4, order.getOrderCity().getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static List<City> getCitiesList() {
+        List<City> cities = new ArrayList<>();
+        try {
+            resultSet = statement.executeQuery("SELECT name FROM city");
+            while (resultSet.next()) {
+                cities.add(new City(resultSet.getString(1)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cities;
+    }
 
+    public static List<District> getDistrictsList() {
+        List<District> districts = new ArrayList<>();
+        try {
+            resultSet = statement.executeQuery("SELECT name, city_id FROM district");
+            while (resultSet.next()) {
+                districts.add(new District(resultSet.getString(1), resultSet.getInt(2)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return districts;
+    }
+
+    public static List<Product> getProductsList() {
+        List<Product> products = new ArrayList<>();
+        try {
+            resultSet = statement.executeQuery("SELECT name, price, weight, city_id, district_id FROM district");
+            while (resultSet.next()) {
+                products.add(new Product(resultSet.getString(1), resultSet.getInt(2), resultSet.getDouble(3), resultSet.getInt(4), resultSet.getInt("district_id")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
 //    private String check(String first_name, String last_name, int user_id, String username) {
 //        try {
 //

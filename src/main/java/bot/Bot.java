@@ -12,11 +12,6 @@ import java.util.logging.Logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-//    @Override
-//    public void onUpdatesReceived(List<Update> updates) {
-//
-//    }
-
     @Override
     public String getBotToken() {
         return BotSettings.getBOT_TOKEN();
@@ -25,47 +20,43 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         System.out.println("Update");
-        if (!update.hasMessage() || !update.getMessage().hasText()) return;
-//        if (update.getMessage().getText().equals("/start"));
-        final String text = update.getMessage().getText();
         final long chatId = update.getMessage().getChatId();
-        User user = null;
-        try {
-            user = SQLhandler.findUserByChatId(chatId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        BotContext context;
-        BotState state;
-        if (user == null) {
-            state = BotState.getInitialState();
 
-            user = new User(chatId, state.ordinal(), true);
-            try {
-                SQLhandler.addNewUser(user);
-            } catch (SQLException e) {
-                e.printStackTrace();
+        if (update.hasMessage()) {
+            if (update.getMessage().hasText()) {
+                final String text = update.getMessage().getText();
+                User user;
+                user = SQLhandler.findUserByChatId(chatId);
+                BotContext context;
+                BotState state;
+                if (user == null) {
+                    state = BotState.getInitialState();
+                    user = new User(chatId, state.ordinal(), true);
+                    SQLhandler.addNewUser(user);
+                    context = BotContext.of(this, user, text);
+                    state.enter(context);
+                } else {
+                    context = BotContext.of(this, user, text);
+                    state = BotState.byId(user.getStateId());
+                }
+
+                state.handleInput(context);
+
+                do {
+                    state = state.nextState();
+                    state.enter(context);
+                } while (!state.isInputNeeded());
+
+                user.setStateId(state.ordinal());
+                SQLhandler.updateUser(user);
             }
-            context = BotContext.of(this, user, text);
-            state.enter(context);
-        } else {
-            context = BotContext.of(this, user, text);
-            state = BotState.byId(user.getStateId());
+        } else if (update.hasCallbackQuery()) {
+            final String getCalback = update.getCallbackQuery().getData();
+
         }
+//        if (update.getMessage().getText().equals("/start"));
 
-        state.handleInput(context);
 
-        do {
-            state = state.nextState();
-            state.enter(context);
-        } while (!state.isInputNeeded());
-
-        user.setStateId(state.ordinal());
-        try {
-            SQLhandler.updateUser(user);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

@@ -38,7 +38,7 @@ public class SQLhandler {
     public static User findUserByChatId(long chatId) {
         User user = null;
         try {
-            resultSet = statement.executeQuery("SELECT id, chat_id, state_id, notify FROM user WHERE chat_id = " + chatId);
+            resultSet = statement.executeQuery("SELECT id, chat_id, state_id, notify FROM users WHERE chat_id = " + chatId);
 //        User(String nick, Long chatId, Integer stateId, Boolean notify)
             user = null;
             while (resultSet.next()) {
@@ -62,7 +62,7 @@ public class SQLhandler {
             long chatId = user.getChatId();
             int stateId = user.getStateId();
             boolean notify = user.getNotify();
-            String query = "INSERT INTO user (chat_id, state_id, notify /*order_id*/) VALUES ((?), (?), (?)/*, (?)*/)";
+            String query = "INSERT INTO users (chat_id, state_id, notify /*order_id*/) VALUES ((?), (?), (?)/*, (?)*/)";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setLong(1, chatId);
             preparedStatement.setInt(2, stateId);
@@ -78,7 +78,7 @@ public class SQLhandler {
 
     public static void updateUser(User user) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE user SET state_id = ? WHERE chat_id = " + user.getChatId());
+            preparedStatement = connection.prepareStatement("UPDATE users SET state_id = ? WHERE chat_id = " + user.getChatId());
             preparedStatement.setInt(1, user.getStateId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -88,7 +88,7 @@ public class SQLhandler {
 
     public static void addNewOrder(Order order) {
         try {
-            preparedStatement = connection.prepareStatement("INSERT INTO 'order' (user_chat_id), (order_details) VALUES ((?), (?))");
+            preparedStatement = connection.prepareStatement("INSERT INTO orders (user_chat_id), (order_details) VALUES ((?), (?))");
             preparedStatement.setLong(1, order.getOrderUser().getChatId());
             preparedStatement.setInt(2, order.getOrderDetails());
             preparedStatement.executeUpdate();
@@ -99,7 +99,8 @@ public class SQLhandler {
 
     public static void updateOrder(Order order) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE 'order' SET city_id = ?, district_id, product_id, payment_id  WHERE id = " + order.getId());
+            //todo Отредактировать запрос, потому что выбивает exception SQL ошибка синтаксиса ","
+            preparedStatement = connection.prepareStatement("UPDATE orders SET city_id = ?, district_id = ?, product_id = ?, payment_id = ?   WHERE id = " + order.getId());
             preparedStatement.setInt(1, order.getOrderCity().getId());
             preparedStatement.setInt(2, order.getOrderDistrict().getId());
             preparedStatement.setInt(3, order.getOrderProduct().getId());
@@ -113,9 +114,10 @@ public class SQLhandler {
     public static List<City> getCitiesList() {
         List<City> cities = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT name FROM city");
+            resultSet = statement.executeQuery("SELECT id, name FROM city");
             while (resultSet.next()) {
-                cities.add(new City(resultSet.getString(1)));
+                cities.add(new City(resultSet.getInt(1),
+                        resultSet.getString(2)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -126,9 +128,11 @@ public class SQLhandler {
     public static List<District> getDistrictsList() {
         List<District> districts = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT name, city_id FROM district");
+            resultSet = statement.executeQuery("SELECT id, name, city_id FROM district");
             while (resultSet.next()) {
-                districts.add(new District(resultSet.getString(1), resultSet.getInt(2)));
+                districts.add(new District(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getInt(3)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -141,7 +145,12 @@ public class SQLhandler {
         try {
             resultSet = statement.executeQuery("SELECT id, name, price, weight, city_id, district_id FROM product");
             while (resultSet.next()) {
-                products.add(new Product(resultSet.getInt(1), resultSet.getString(2), resultSet.getInt(3), resultSet.getDouble(4), resultSet.getInt(5), resultSet.getInt("district_id")));
+                products.add(new Product(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getInt(3),
+                        resultSet.getDouble(4),
+                        resultSet.getInt(5),
+                        resultSet.getInt("district_id")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -161,6 +170,20 @@ public class SQLhandler {
         }
         return payments;
     }
+
+    public static List<User> getUsersList() {
+        List<User> users = new ArrayList<>();
+        try {
+            resultSet = statement.executeQuery("SELECT id, chat_id chatId FROM users");
+            while (resultSet.next()) {
+                users.add(new User(resultSet.getInt(1), resultSet.getLong(2)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
 //    private String check(String first_name, String last_name, int user_id, String username) {
 //        try {
 //

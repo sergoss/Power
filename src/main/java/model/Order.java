@@ -13,12 +13,12 @@ public class Order {
     private int b = 99999;
 
     public Order() {
-        orderDetails = a + (int) (Math.random() * b);
+        this.orderDetails = a + (int) (Math.random() * b);
     }
 
     public Order(User orderUser) {
         this.orderUser = orderUser;
-        orderDetails = a + (int) (Math.random() * b);
+        this.orderDetails = a + (int) (Math.random() * b);
     }
 
 

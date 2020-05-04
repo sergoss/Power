@@ -3,7 +3,6 @@ package service;
 import model.MenuItem;
 
 import java.util.List;
-//todo rename this class
 public class MenuItemListHandler<T extends MenuItem> {
     private List<T> list;
 

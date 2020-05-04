@@ -13,5 +13,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\Mzheg\IdeaProjects\Power\power.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="power [3]" uuid="2ef83e89-8c30-4b3e-95dd-a01cee63ccb9">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\zigau\IdeaProjects\Power\power.db</jdbc-url>
+    </data-source>
   </component>
 </project>

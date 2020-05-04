@@ -25,6 +25,11 @@ public class User extends MenuItem {
         this.stateId = stateId;
     }
 
+    public User(Integer id, Long chatId) {
+        this.id = id;
+        this.chatId = chatId;
+    }
+
     public User(Long chatId, Integer stateId, Boolean notify) {
         this.chatId = chatId;
         this.stateId = stateId;

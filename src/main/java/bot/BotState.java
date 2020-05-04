@@ -9,7 +9,7 @@ import service.SQLhandler;
 
 public enum BotState {
 
-    START() {
+    START(false) {
         private BotState next;
 
         @Override
@@ -168,6 +168,9 @@ public enum BotState {
                 next = CHECKING_PAY;
             } else if (confirmOrder.equals("Отказаться от оплаты")) {
                 next = START;
+            } else {
+                sendMessage(context, "Empty message");
+                next = ORDER;
             }
         }
 
@@ -181,15 +184,15 @@ public enum BotState {
         private BotState next;
         @Override
         public void enter(BotContext context) {
-
+            System.out.println("Проверка оплаты!");
+            sendMessage(context, "Ваша оплата проверяется");
         }
 
         @Override
         public void handleInput(BotContext context) {
             String confirmOrder = context.getInput();
-            if (confirmOrder.equals("Я оплатил")) {
-                next = CHECKING_PAY;
-            } else if (confirmOrder.equals("Вернуться в главное меню")) {
+
+            if (confirmOrder.equals("Вернуться в главное меню")) {
                 next = START;
             }
         }
@@ -197,7 +200,7 @@ public enum BotState {
 
         @Override
         public BotState nextState() {
-            return START;
+            return next;
         }
     };
 

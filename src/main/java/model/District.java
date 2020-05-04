@@ -5,7 +5,8 @@ public class District extends MenuItem {
     private String name;
     private Integer cityId;
 
-    public District(String name, Integer cityId) {
+    public District(Integer id, String name, Integer cityId) {
+        this.id = id;
         this.name = name;
         this.cityId = cityId;
     }

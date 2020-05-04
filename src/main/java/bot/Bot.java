@@ -55,6 +55,7 @@ public class Bot extends TelegramLongPollingBot {
         } else if (update.hasCallbackQuery()) {
             final String getCalback = update.getCallbackQuery().getData();
 
+
         }
 //        if (update.getMessage().getText().equals("/start"));
 

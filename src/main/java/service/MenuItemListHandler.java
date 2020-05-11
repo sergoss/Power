@@ -19,6 +19,16 @@ public class MenuItemListHandler<T extends MenuItem> {
         return null;
     }
 
+    public T getMenuItemById(int id) {
+        for (int i = 0; i < this.list.size(); i++) {
+            if (this.list.get(i).getId() == id) {
+                return this.list.get(i);
+            }
+        }
+        return null;
+    }
+
+
     public boolean checkMenuItemContains(String name) {
         for (int i = 0; i < this.list.size(); i++) {
             if (this.list.get(i).getName().equals(name)) {
@@ -27,4 +37,6 @@ public class MenuItemListHandler<T extends MenuItem> {
         }
         return false;
     }
+
+
 }

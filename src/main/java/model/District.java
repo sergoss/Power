@@ -10,7 +10,7 @@ public class District extends MenuItem {
         this.name = name;
         this.cityId = cityId;
     }
-
+    @Override
     public Integer getId() {
         return id;
     }

@@ -5,4 +5,6 @@ public class MenuItem {
     public String getName() {
         return null;
     }
+    public Integer getId() { return 0;
+    }
 }

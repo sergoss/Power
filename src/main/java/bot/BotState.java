@@ -194,6 +194,8 @@ public enum BotState {
 
             if (confirmOrder.equals("Вернуться в главное меню")) {
                 next = START;
+            } else {
+                next = CHECKING_PAY;
             }
         }
 

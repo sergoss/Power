@@ -17,7 +17,6 @@ public class User extends MenuItem {
         this.chatId = chatId;
         this.stateId = stateId;
         this.notify = notify;
-        this.order = new Order();
     }
 
     public User(Long chatId, Integer stateId) {
@@ -34,15 +33,9 @@ public class User extends MenuItem {
         this.chatId = chatId;
         this.stateId = stateId;
         this.notify = notify;
-        this.order = new Order();
     }
 
-    public User(String nick, Long chatId, Integer stateId, Boolean notify) {
-//        this.nick = nick;
-        this.chatId = chatId;
-        this.stateId = stateId;
-        this.notify = notify;
-    }
+
 
     public Integer getId() {
         return id;

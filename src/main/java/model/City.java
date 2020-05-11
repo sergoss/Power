@@ -13,7 +13,7 @@ public class City extends MenuItem {
         this.name = name;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
     @Override

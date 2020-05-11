@@ -1,8 +1,6 @@
 package bot;
 
-import model.Order;
 import model.User;
-import service.SQLhandler;
 
 public class BotContext {
     private Bot bot;

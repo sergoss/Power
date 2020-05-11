@@ -40,7 +40,6 @@ public class SQLhandler {
         try {
             resultSet = statement.executeQuery("SELECT id, chat_id, state_id, notify FROM users WHERE chat_id = " + chatId);
 //        User(String nick, Long chatId, Integer stateId, Boolean notify)
-            user = null;
             while (resultSet.next()) {
                 if (chatId == resultSet.getLong(2)) {
                     user = new User(resultSet.getInt(1),
@@ -53,6 +52,13 @@ public class SQLhandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return user;
     }
 
@@ -86,11 +92,84 @@ public class SQLhandler {
         }
     }
 
+    public static void resetUserStateId() {
+        System.out.println("Пользователи сброшены");
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE users SET state_id = 0 WHERE state_id > 0");
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Order findOrderByUserChatId(long chatId) {
+        Order order = null;
+        try {
+//            preparedStatement = connection.prepareStatement("SELECT id, order_details, completed, city_id, district_id, product_id, payment_id FROM orders WHERE user_chat_id = " + chatId + " AND completed = false")
+
+
+            resultSet =  statement.executeQuery("SELECT id, order_details, completed, city_id, district_id, product_id, payment_id FROM orders WHERE user_chat_id = " + chatId + " AND completed = false");
+//            while (resultSet.next()) {
+//
+//            }
+            int orderId = resultSet.getInt("id");
+            int orderDetails = resultSet.getInt("order_details");
+            boolean completed = resultSet.getBoolean("completed");
+            int cityId = resultSet.getInt("city_id");
+            int districtId = resultSet.getInt("district_id");
+            int productId = resultSet.getInt("product_id");
+            int paymentId = resultSet.getInt("payment_id");
+            resultSet.close();
+            order = new Order(orderId, orderDetails, completed);
+
+            if (cityId == 0) {
+                order.setOrderCity(new MenuItemListHandler<>(SQLhandler.getCitiesList()).getMenuItemById(cityId));
+            }
+            if (districtId == 0) {
+                order.setOrderDistrict(new MenuItemListHandler<>(SQLhandler.getDistrictsList()).getMenuItemById(districtId));
+            }
+            if (productId == 0) {
+                order.setOrderProduct(new MenuItemListHandler<>(SQLhandler.getProductsList()).getMenuItemById(productId));
+            }
+            if (paymentId == 0) {
+                order.setOrderPayment(new MenuItemListHandler<>(SQLhandler.getPaymentsList()).getMenuItemById(paymentId));
+            }
+
+//            order = new Order(resultSet.getInt("id"), resultSet.getInt("order_details"), resultSet.getBoolean("completed"));
+//            if (resultSet.getInt("city_id") == 0) {
+//                order.setOrderCity(new MenuItemListHandler<>(SQLhandler.getCitiesList()).getMenuItemById(resultSet.getInt("city_id")));
+//            }
+//            if (resultSet.getInt("district_id") == 0) {
+//                order.setOrderDistrict(new MenuItemListHandler<>(SQLhandler.getDistrictsList()).getMenuItemById(resultSet.getInt("distrcit_id")));
+//            }
+//            if (resultSet.getInt("product_id") == 0) {
+//                order.setOrderProduct(new MenuItemListHandler<>(SQLhandler.getProductsList()).getMenuItemById(resultSet.getInt("product_id")));
+//            }
+//            if (resultSet.getInt("payment_id") == 0) {
+//                order.setOrderPayment(new MenuItemListHandler<>(SQLhandler.getPaymentsList()).getMenuItemById(resultSet.getInt("payment_id")));
+//            }
+//            while (resultSet.next()) {
+//
+//            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException throwables) {
+//                throwables.printStackTrace();
+//            }
+//        }
+        return order;
+    }
+
     public static void addNewOrder(Order order) {
         try {
-            preparedStatement = connection.prepareStatement("INSERT INTO orders (user_chat_id), (order_details) VALUES ((?), (?))");
+            preparedStatement = connection.prepareStatement("INSERT INTO orders (user_chat_id, order_details, completed) VALUES (?, ?, ?)");
             preparedStatement.setLong(1, order.getOrderUser().getChatId());
             preparedStatement.setInt(2, order.getOrderDetails());
+            preparedStatement.setBoolean(3, order.getOrderComplete());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -100,11 +179,28 @@ public class SQLhandler {
     public static void updateOrder(Order order) {
         try {
             //todo Отредактировать запрос, потому что выбивает exception SQL ошибка синтаксиса ","
+            int defaultId = 0;
             preparedStatement = connection.prepareStatement("UPDATE orders SET city_id = ?, district_id = ?, product_id = ?, payment_id = ?   WHERE id = " + order.getId());
-            preparedStatement.setInt(1, order.getOrderCity().getId());
-            preparedStatement.setInt(2, order.getOrderDistrict().getId());
-            preparedStatement.setInt(3, order.getOrderProduct().getId());
-            preparedStatement.setInt(4, order.getOrderPayment().getId());
+            if (order.getOrderCity() != null) {
+                preparedStatement.setInt(1, order.getOrderCity().getId());
+            } else {
+                preparedStatement.setInt(1, defaultId);
+            }
+            if (order.getOrderDistrict() != null) {
+                preparedStatement.setInt(2, order.getOrderDistrict().getId());
+            } else {
+                preparedStatement.setInt(2, defaultId);
+            }
+            if (order.getOrderProduct() != null) {
+                preparedStatement.setInt(3, order.getOrderProduct().getId());
+            } else {
+                preparedStatement.setInt(3, defaultId);
+            }
+            if (order.getOrderPayment() != null) {
+                preparedStatement.setInt(4, order.getOrderPayment().getId());
+            } else {
+                preparedStatement.setInt(4, defaultId);
+            }
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -122,6 +218,13 @@ public class SQLhandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return cities;
     }
 
@@ -137,6 +240,13 @@ public class SQLhandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return districts;
     }
 
@@ -154,6 +264,12 @@ public class SQLhandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return products;
     }
@@ -163,11 +279,20 @@ public class SQLhandler {
         try {
             resultSet = statement.executeQuery("SELECT id, name, details  FROM payment");
             while (resultSet.next()) {
-                payments.add(new Payment(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3)));
+                payments.add(new Payment(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return payments;
     }
 
@@ -176,11 +301,19 @@ public class SQLhandler {
         try {
             resultSet = statement.executeQuery("SELECT id, chat_id chatId FROM users");
             while (resultSet.next()) {
-                users.add(new User(resultSet.getInt(1), resultSet.getLong(2)));
+                users.add(new User(resultSet.getInt(1),
+                        resultSet.getLong(2)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+//        finally {
+//            try {
+//                resultSet.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return users;
     }
 

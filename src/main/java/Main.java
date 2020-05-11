@@ -1,4 +1,5 @@
 import bot.Bot;
+import model.User;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
@@ -15,6 +16,7 @@ public class Main {
             System.out.println("Connection dataBase");
             SQLhandler.setConnection();
             SQLhandler.createStatement();
+            SQLhandler.resetUserStateId();
             System.out.println("DB connected");
             botsApi.registerBot(new Bot());
             System.out.println("Бот стартанул");

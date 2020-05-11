@@ -4,6 +4,7 @@ import model.Order;
 import model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import service.MenuItemListHandler;
 import service.SQLhandler;
 
 import java.sql.SQLException;
@@ -29,18 +30,55 @@ public class Bot extends TelegramLongPollingBot {
                 user = SQLhandler.findUserByChatId(chatId);
                 BotContext context;
                 BotState state;
+                Order order;
+                order = SQLhandler.findOrderByUserChatId(user.getChatId());
+
                 if (user == null) {
                     state = BotState.getInitialState();
                     user = new User(chatId, state.ordinal(), true);
-                    user.getOrder().setOrderUser(user);
-                    SQLhandler.addNewOrder(user.getOrder());
                     SQLhandler.addNewUser(user);
+                    order = new Order(user);
+                    user.setOrder(order);
+                    SQLhandler.addNewOrder(user.getOrder());
                     context = BotContext.of(this, user, text);
                     state.enter(context);
                 } else {
+                    if (order == null) {
+                        order = new Order(user);
+                        SQLhandler.addNewOrder(order);
+                    }
+                    user.setOrder(order);
+                    SQLhandler.updateOrder(order);
+
                     context = BotContext.of(this, user, text);
                     state = BotState.byId(user.getStateId());
                 }
+
+//                else if (order == null){
+//                    order = new Order(user);
+//                    user.setOrder(order);
+//                    SQLhandler.addNewOrder(order);
+//                    context = BotContext.of(this, user, text);
+//                    state = BotState.byId(user.getStateId());
+//                } else {
+//                    order = user.getOrder();
+//                    SQLhandler.updateOrder(order);
+//                    context = BotContext.of(this, user, text);
+//                    state = BotState.byId(user.getStateId());
+//                }
+
+
+//                user.setOrder(order);
+//                if (order == null) {
+//                    order = new Order(user);
+//                    SQLhandler.addNewOrder(order);
+//                }
+//                if (order.getOrderComplete() == true) {
+//                    user.getOrder().setOrderUser(user);
+//                    SQLhandler.addNewOrder(user.getOrder());
+//                } else {
+//                    SQLhandler.updateOrder(order);
+//                }
 
                 state.handleInput(context);
 

@@ -1,11 +1,12 @@
 package bot;
 
-import com.google.inject.internal.asm.$Handle;
 import model.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import service.MenuItemListHandler;
 import service.SQLhandler;
+
+import java.sql.SQLException;
 
 public enum BotState {
 
@@ -46,16 +47,30 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
             String cityName = context.getInput();
+            int orderId = context.getUser().getOrder().getId();
+
             MenuItemListHandler<City> menuItemListHandler = new MenuItemListHandler(SQLhandler.getCitiesList());
             if (menuItemListHandler.checkMenuItemContains(cityName)) {
-                City city = menuItemListHandler.getMenuItemByName(cityName);
-                context.getUser().getOrder().setOrderCity(city);
+                SQLhandler.setCityIdToOrder(cityName, orderId);
                 next = CHOOSING_DISTRICT;
             } else {
                 sendMessage(context, "Empty message");
                 next = CHOOSING_CITY;
             }
         }
+//        @Override
+//        public void handleInput(BotContext context) {
+//            String cityName = context.getInput();
+//            MenuItemListHandler<City> menuItemListHandler = new MenuItemListHandler(SQLhandler.getCitiesList());
+//            if (menuItemListHandler.checkMenuItemContains(cityName)) {
+//                City city = menuItemListHandler.getMenuItemByName(cityName);
+//                context.getUser().getOrder().setOrderCity(city);
+//                next = CHOOSING_DISTRICT;
+//            } else {
+//                sendMessage(context, "Empty message");
+//                next = CHOOSING_CITY;
+//            }
+//        }
 
         @Override
         public BotState nextState() {
@@ -75,10 +90,10 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
             String districtName = context.getInput();
+            int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<District> menuItemListHandler = new MenuItemListHandler(SQLhandler.getDistrictsList());
             if (menuItemListHandler.checkMenuItemContains(districtName)) {
-                District district = menuItemListHandler.getMenuItemByName(districtName);
-                context.getUser().getOrder().setOrderDistrict(district);
+                SQLhandler.setDistrictIdToOrder(districtName, orderId);
                 next = CHOOSING_PRODUCT;
             } else if (districtName.equals("В главное меню")) {
                 next = START;
@@ -105,10 +120,10 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
             String productName = context.getInput();
+            int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<Product> menuItemListHandler = new MenuItemListHandler(SQLhandler.getProductsList());
             if (menuItemListHandler.checkMenuItemContains(productName)) {
-                Product product = menuItemListHandler.getMenuItemByName(productName);
-                context.getUser().getOrder().setOrderProduct(product);
+                SQLhandler.setProductIdToOrder(productName, orderId);
                 next = CHOOSING_PAYMENT;
             } else {
                 sendMessage(context, "Empty message");
@@ -134,11 +149,10 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
             String paymentName = context.getInput();
+            int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<Payment> menuItemListHandler = new MenuItemListHandler(SQLhandler.getPaymentsList());
             if (menuItemListHandler.checkMenuItemContains(paymentName)) {
-                Payment payment = menuItemListHandler.getMenuItemByName(paymentName);
-                context.getUser().getOrder().setOrderPayment(payment);
-                SQLhandler.updateOrder(context.getUser().getOrder());
+                SQLhandler.setPaymentIdToOrder(paymentName, orderId);
                 next = ORDER;
             } else {
                 sendMessage(context, "Empty message");

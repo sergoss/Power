@@ -296,6 +296,41 @@ public class SQLhandler {
         return payments;
     }
 
+    public static void setCityIdToOrder(String cityName, int orderId) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE orders SET city_id = (SELECT id FROM city WHERE name = '" + cityName +"') WHERE id = " + orderId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setDistrictIdToOrder(String districtName, int orderId) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE orders SET district_id = (SELECT id FROM district WHERE name = '" + districtName +"') WHERE id = " + orderId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setProductIdToOrder(String productName, int orderId) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE orders SET product_id = (SELECT id FROM product WHERE name = '" + productName +"') WHERE id = " + orderId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setPaymentIdToOrder(String paymentName, int orderId) {
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE orders SET payment_id = (SELECT id FROM payment WHERE name = '" + paymentName +"') WHERE id = " + orderId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     public static List<User> getUsersList() {
         List<User> users = new ArrayList<>();
         try {

@@ -19,5 +19,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\zigau\IdeaProjects\Power\power.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="power [4]" uuid="d2ce2c24-eb6a-4805-a89a-1f25d0c14489">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:D:\GoogleDrive\IdeaProjects\Power\power.db</jdbc-url>
+    </data-source>
   </component>
 </project>

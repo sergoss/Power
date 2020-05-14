@@ -88,7 +88,7 @@ public class Bot extends TelegramLongPollingBot {
                 } while (!state.isInputNeeded());
 
                 user.setStateId(state.ordinal());
-                SQLhandler.updateUser(user);
+//                SQLhandler.updateUser(user);
             }
         } else if (update.hasCallbackQuery()) {
             final String getCalback = update.getCallbackQuery().getData();

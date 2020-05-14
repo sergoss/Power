@@ -26,33 +26,46 @@ public class Bot extends TelegramLongPollingBot {
         if (update.hasMessage()) {
             if (update.getMessage().hasText()) {
                 final String text = update.getMessage().getText();
-                User user;
-                user = SQLhandler.findUserByChatId(chatId);
-                BotContext context;
-                BotState state;
-                Order order;
-                order = SQLhandler.findOrderByUserChatId(user.getChatId());
+                botUpdate(text, chatId);
+            }
+        } else if (update.hasCallbackQuery()) {
+            final String callbackQuery = update.getCallbackQuery().getData();
+            botUpdate(callbackQuery, chatId);
 
-                if (user == null) {
-                    state = BotState.getInitialState();
-                    user = new User(chatId, state.ordinal(), true);
-                    SQLhandler.addNewUser(user);
-                    order = new Order(user);
-                    user.setOrder(order);
-                    SQLhandler.addNewOrder(user.getOrder());
-                    context = BotContext.of(this, user, text);
-                    state.enter(context);
-                } else {
-                    if (order == null) {
-                        order = new Order(user);
-                        SQLhandler.addNewOrder(order);
-                    }
-                    user.setOrder(order);
-                    SQLhandler.updateOrder(order);
+        }
+//        if (update.getMessage().getText().equals("/start"));
 
-                    context = BotContext.of(this, user, text);
-                    state = BotState.byId(user.getStateId());
-                }
+
+    }
+
+    private void botUpdate(String input, long chatId) {
+        User user;
+        user = SQLhandler.findUserByChatId(chatId);
+        BotContext context;
+        BotState state;
+        Order order;
+        order = SQLhandler.findOrderByUserChatId(user.getChatId());
+
+        if (user == null) {
+            state = BotState.getInitialState();
+            user = new User(chatId, state.ordinal(), true);
+            SQLhandler.addNewUser(user);
+            order = new Order(user);
+            user.setOrder(order);
+            SQLhandler.addNewOrder(user.getOrder());
+            context = BotContext.of(this, user, input);
+            state.enter(context);
+        } else {
+            if (order == null) {
+                order = new Order(user);
+                SQLhandler.addNewOrder(order);
+            }
+            user.setOrder(order);
+            SQLhandler.updateOrder(order);
+
+            context = BotContext.of(this, user, input);
+            state = BotState.byId(user.getStateId());
+        }
 
 //                else if (order == null){
 //                    order = new Order(user);
@@ -80,24 +93,15 @@ public class Bot extends TelegramLongPollingBot {
 //                    SQLhandler.updateOrder(order);
 //                }
 
-                state.handleInput(context);
+        state.handleInput(context);
 
-                do {
-                    state = state.nextState();
-                    state.enter(context);
-                } while (!state.isInputNeeded());
+        do {
+            state = state.nextState();
+            state.enter(context);
+        } while (!state.isInputNeeded());
 
-                user.setStateId(state.ordinal());
+        user.setStateId(state.ordinal());
 //                SQLhandler.updateUser(user);
-            }
-        } else if (update.hasCallbackQuery()) {
-            final String getCalback = update.getCallbackQuery().getData();
-
-
-        }
-//        if (update.getMessage().getText().equals("/start"));
-
-
     }
 
     @Override

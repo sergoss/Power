@@ -1,12 +1,12 @@
 package bot;
 
+import controller.MenuController;
 import model.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import service.MenuItemListHandler;
 import service.SQLhandler;
-
-import java.sql.SQLException;
 
 public enum BotState {
 
@@ -38,23 +38,25 @@ public enum BotState {
     CHOOSING_CITY {
         private BotState next;
 
+        //todo понять как пердавать наше меню в метод sendMessage или в context
         @Override
         public void enter(BotContext context) {
             System.out.println("City");
-            sendMessage(context, "Выбери город");
+            sendMessage(context, "Выбери город", MenuController.inlineKeyboardMenu(SQLhandler.getCitiesList()));
         }
 
         @Override
         public void handleInput(BotContext context) {
-            String cityName = context.getInput();
+            String input = context.getInput();
             int orderId = context.getUser().getOrder().getId();
-
             MenuItemListHandler<City> menuItemListHandler = new MenuItemListHandler(SQLhandler.getCitiesList());
-            if (menuItemListHandler.checkMenuItemContains(cityName)) {
-                SQLhandler.setCityIdToOrder(cityName, orderId);
+            if (menuItemListHandler.checkMenuItemContains(input)) {
+                SQLhandler.setCityIdToOrder(input, orderId);
                 next = CHOOSING_DISTRICT;
+            } else if (input.equals(MenuController.getBackToMainMenu())) {
+                next = START;
             } else {
-                sendMessage(context, "Empty message");
+                sendMessage(context, MenuController.getWrongInput());
                 next = CHOOSING_CITY;
             }
         }
@@ -84,21 +86,21 @@ public enum BotState {
         @Override
         public void enter(BotContext context) {
             System.out.println("District");
-            sendMessage(context, "Выбери Район");
+            sendMessage(context, "Выбери район", MenuController.inlineKeyboardMenu(SQLhandler.getDistrictsList()));
         }
 
         @Override
         public void handleInput(BotContext context) {
-            String districtName = context.getInput();
+            String input = context.getInput();
             int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<District> menuItemListHandler = new MenuItemListHandler(SQLhandler.getDistrictsList());
-            if (menuItemListHandler.checkMenuItemContains(districtName)) {
-                SQLhandler.setDistrictIdToOrder(districtName, orderId);
+            if (menuItemListHandler.checkMenuItemContains(input)) {
+                SQLhandler.setDistrictIdToOrder(input, orderId);
                 next = CHOOSING_PRODUCT;
-            } else if (districtName.equals("В главное меню")) {
+            } else if (input.equals(MenuController.getBackToMainMenu())) {
                 next = START;
             } else {
-                sendMessage(context, "Empty message");
+                sendMessage(context, MenuController.getWrongInput());
                 next = CHOOSING_DISTRICT;
             }
         }
@@ -114,19 +116,21 @@ public enum BotState {
         @Override
         public void enter(BotContext context) {
             System.out.println("Product");
-            sendMessage(context, "Выбери товар");
+            sendMessage(context, "Выбери товар", MenuController.inlineKeyboardMenu(SQLhandler.getProductsList()));
         }
 
         @Override
         public void handleInput(BotContext context) {
-            String productName = context.getInput();
+            String input = context.getInput();
             int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<Product> menuItemListHandler = new MenuItemListHandler(SQLhandler.getProductsList());
-            if (menuItemListHandler.checkMenuItemContains(productName)) {
-                SQLhandler.setProductIdToOrder(productName, orderId);
+            if (menuItemListHandler.checkMenuItemContains(input)) {
+                SQLhandler.setProductIdToOrder(input, orderId);
                 next = CHOOSING_PAYMENT;
+            } else if (input.equals(MenuController.getBackToMainMenu())) {
+                next = START;
             } else {
-                sendMessage(context, "Empty message");
+                sendMessage(context, MenuController.getWrongInput());
                 next = CHOOSING_PRODUCT;
             }
         }
@@ -143,19 +147,21 @@ public enum BotState {
         @Override
         public void enter(BotContext context) {
             System.out.println("Payment");
-            sendMessage(context, "Выбери платежку");
+            sendMessage(context, "Выбери город", MenuController.inlineKeyboardMenu(SQLhandler.getPaymentsList()));
         }
 
         @Override
         public void handleInput(BotContext context) {
-            String paymentName = context.getInput();
+            String input = context.getInput();
             int orderId = context.getUser().getOrder().getId();
             MenuItemListHandler<Payment> menuItemListHandler = new MenuItemListHandler(SQLhandler.getPaymentsList());
-            if (menuItemListHandler.checkMenuItemContains(paymentName)) {
-                SQLhandler.setPaymentIdToOrder(paymentName, orderId);
+            if (menuItemListHandler.checkMenuItemContains(input)) {
+                SQLhandler.setPaymentIdToOrder(input, orderId);
                 next = ORDER;
+            } else if (input.equals(MenuController.getBackToMainMenu())) {
+                next = START;
             } else {
-                sendMessage(context, "Empty message");
+                sendMessage(context, MenuController.getWrongInput());
                 next = CHOOSING_PAYMENT;
             }
         }
@@ -168,7 +174,6 @@ public enum BotState {
 
     ORDER {
         private BotState next;
-
         @Override
         public void enter(BotContext context) {
             System.out.println("Order");
@@ -177,13 +182,13 @@ public enum BotState {
 
         @Override
         public void handleInput(BotContext context) {
-            String confirmOrder = context.getInput();
-            if (confirmOrder.equals("Я оплатил")) {
+            String input = context.getInput();
+            if (input.equals(MenuController.getConfirmationOfPayment())) {
                 next = CHECKING_PAY;
-            } else if (confirmOrder.equals("Отказаться от оплаты")) {
+            } else if (input.equals(MenuController.getRefusePayment())) {
                 next = START;
             } else {
-                sendMessage(context, "Empty message");
+                sendMessage(context, MenuController.getWrongInput());
                 next = ORDER;
             }
         }
@@ -204,9 +209,9 @@ public enum BotState {
 
         @Override
         public void handleInput(BotContext context) {
-            String confirmOrder = context.getInput();
+            String input = context.getInput();
 
-            if (confirmOrder.equals("Вернуться в главное меню")) {
+            if (input.equals(MenuController.getBackToMainMenu())) {
                 next = START;
             } else {
                 next = CHECKING_PAY;
@@ -254,6 +259,17 @@ public enum BotState {
         }
     }
 
+    protected void sendMessage(BotContext context, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
+        SendMessage message = new SendMessage()
+                .setChatId(context.getUser().getChatId())
+                .setText(text).setReplyMarkup(inlineKeyboardMarkup);
+        try {
+            context.getBot().execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean isInputNeeded() {
         return inputNeeded;
     }
@@ -265,6 +281,11 @@ public enum BotState {
     public abstract void enter(BotContext context);
 
     public abstract BotState nextState();
+//todo добавить метод отрисовщик меню
+
+//    public void setMenu(BotContext context) {
+//
+//    };
 
 //    public void handleInput<T extends MenuItem> (BotContext context, String input) {
 //        input = context.getInput();

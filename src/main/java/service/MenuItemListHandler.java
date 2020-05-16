@@ -5,7 +5,7 @@ import model.MenuItem;
 import java.util.List;
 public class MenuItemListHandler<T extends MenuItem> {
     private List<T> list;
-
+    //todo отрефакторить без конструктора через конструкцию <? extends Menu Item>
     public MenuItemListHandler(List<T> list) {
         this.list = list;
     }
@@ -27,7 +27,6 @@ public class MenuItemListHandler<T extends MenuItem> {
         }
         return null;
     }
-
 
     public boolean checkMenuItemContains(String name) {
         for (int i = 0; i < this.list.size(); i++) {

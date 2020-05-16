@@ -15,7 +15,7 @@ public class SQLhandler {
 
     public static void setConnection() throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:power.db");
+        connection = DriverManager.getConnection("jdbc:sqlite:power_update.db");
     }
 
     public static void createStatement() throws SQLException {
@@ -68,12 +68,13 @@ public class SQLhandler {
             long chatId = user.getChatId();
             int stateId = user.getStateId();
             boolean notify = user.getNotify();
-            String query = "INSERT INTO users (chat_id, state_id, notify /*order_id*/) VALUES ((?), (?), (?)/*, (?)*/)";
+            String query = "INSERT INTO users (chat_id, state_id, notify, order_id) VALUES ((?), (?), (?), (?))";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setLong(1, chatId);
             preparedStatement.setInt(2, stateId);
             preparedStatement.setBoolean(3, notify);
-//            preparedStatement.setInt(4, user.getOrder().getId());
+            //todo шляпа и костыль из-за того что не получается изменить default значение в базе и уобрать флаг NOT NULL
+            preparedStatement.setInt(4, 0);
 //        resultSet = preparedStatement.executeQuery();
 //        if (resultSet.next()) return;
             preparedStatement.executeUpdate();
@@ -112,6 +113,7 @@ public class SQLhandler {
 //            while (resultSet.next()) {
 //
 //            }
+            //todo укладывать юзера в ордер в этом методе иначе он будет NULL всегда
             int orderId = resultSet.getInt("id");
             int orderDetails = resultSet.getInt("order_details");
             boolean completed = resultSet.getBoolean("completed");
@@ -210,28 +212,27 @@ public class SQLhandler {
     public static List<City> getCitiesList() {
         List<City> cities = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT id, name FROM city");
+            resultSet = statement.executeQuery("SELECT id, name FROM cities");
             while (resultSet.next()) {
                 cities.add(new City(resultSet.getInt(1),
                         resultSet.getString(2)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-//        finally {
-//            try {
-//                resultSet.close();
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
         return cities;
     }
 
     public static List<District> getDistrictsList() {
         List<District> districts = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT id, name, city_id FROM district");
+            resultSet = statement.executeQuery("SELECT id, name, city_id FROM districts");
             while (resultSet.next()) {
                 districts.add(new District(resultSet.getInt(1),
                         resultSet.getString(2),
@@ -239,21 +240,20 @@ public class SQLhandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-//        finally {
-//            try {
-//                resultSet.close();
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
         return districts;
     }
 
     public static List<Product> getProductsList() {
         List<Product> products = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT id, name, price, weight, city_id, district_id FROM product");
+            resultSet = statement.executeQuery("SELECT id, name, price, weight, city_id, district_id FROM products");
             while (resultSet.next()) {
                 products.add(new Product(resultSet.getInt(1),
                         resultSet.getString(2),
@@ -277,7 +277,7 @@ public class SQLhandler {
     public static List<Payment> getPaymentsList() {
         List<Payment> payments = new ArrayList<>();
         try {
-            resultSet = statement.executeQuery("SELECT id, name, details  FROM payment");
+            resultSet = statement.executeQuery("SELECT id, name, details  FROM payments");
             while (resultSet.next()) {
                 payments.add(new Payment(resultSet.getInt(1),
                         resultSet.getString(2),
@@ -285,20 +285,19 @@ public class SQLhandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-//        finally {
-//            try {
-//                resultSet.close();
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
         return payments;
     }
 
     public static void setCityIdToOrder(String cityName, int orderId) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE orders SET city_id = (SELECT id FROM city WHERE name = '" + cityName +"') WHERE id = " + orderId);
+            preparedStatement = connection.prepareStatement("UPDATE orders SET city_id = (SELECT id FROM cities WHERE name = '" + cityName +"') WHERE id = " + orderId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -307,7 +306,7 @@ public class SQLhandler {
 
     public static void setDistrictIdToOrder(String districtName, int orderId) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE orders SET district_id = (SELECT id FROM district WHERE name = '" + districtName +"') WHERE id = " + orderId);
+            preparedStatement = connection.prepareStatement("UPDATE orders SET district_id = (SELECT id FROM districts WHERE name = '" + districtName +"') WHERE id = " + orderId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -316,7 +315,7 @@ public class SQLhandler {
 
     public static void setProductIdToOrder(String productName, int orderId) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE orders SET product_id = (SELECT id FROM product WHERE name = '" + productName +"') WHERE id = " + orderId);
+            preparedStatement = connection.prepareStatement("UPDATE orders SET product_id = (SELECT id FROM products WHERE name = '" + productName +"') WHERE id = " + orderId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -325,7 +324,7 @@ public class SQLhandler {
 
     public static void setPaymentIdToOrder(String paymentName, int orderId) {
         try {
-            preparedStatement = connection.prepareStatement("UPDATE orders SET payment_id = (SELECT id FROM payment WHERE name = '" + paymentName +"') WHERE id = " + orderId);
+            preparedStatement = connection.prepareStatement("UPDATE orders SET payment_id = (SELECT id FROM payments WHERE name = '" + paymentName +"') WHERE id = " + orderId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -341,14 +340,13 @@ public class SQLhandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-//        finally {
-//            try {
-//                resultSet.close();
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
         return users;
     }
 

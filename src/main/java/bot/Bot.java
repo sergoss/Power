@@ -1,16 +1,12 @@
 package bot;
 
+import bot.handlers.BotState;
+import bot.handlers.InputHandler;
 import model.Order;
 import model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import service.MenuItemListHandler;
 import service.SQLhandler;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -40,13 +36,13 @@ public class Bot extends TelegramLongPollingBot {
         User user;
         user = SQLhandler.findUserByChatId(chatId);
         BotContext context;
-        BotState state;
+        InputHandler state;
         Order order;
         order = SQLhandler.findOrderByUserChatId(chatId);
 
         if (user == null) {
             state = BotState.getInitialState();
-            user = new User(chatId, state.ordinal(), true);
+            user = new User(chatId, state.id(), true);
             SQLhandler.addNewUser(user);
             order = new Order(user);
             user.setOrder(order);
@@ -68,7 +64,7 @@ public class Bot extends TelegramLongPollingBot {
             state = state.nextState();
             state.enter(context);
         } while (!state.isInputNeeded());
-        user.setStateId(state.ordinal());
+        user.setStateId(state.id());
         SQLhandler.updateUser(user);
     }
 

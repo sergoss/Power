@@ -11,30 +11,15 @@ public class MenuItemListHandler<T extends MenuItem> {
     }
 
     public T getMenuItemByName(String name) {
-        for (int i = 0; i < this.list.size(); i++) {
-            if (this.list.get(i).getName().equals(name)) {
-                return this.list.get(i);
-            }
-        }
-        return null;
+        return this.list.stream().filter(t -> t.getName().equals(name)).findFirst().orElse(null);
     }
 
     public T getMenuItemById(int id) {
-        for (int i = 0; i < this.list.size(); i++) {
-            if (this.list.get(i).getId() == id) {
-                return this.list.get(i);
-            }
-        }
-        return null;
+        return this.list.stream().filter(t -> t.getId() == id).findFirst().orElse(null);
     }
 
-    public boolean checkMenuItemContains(String name) {
-        for (int i = 0; i < this.list.size(); i++) {
-            if (this.list.get(i).getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isMenuItemContains(String name) {
+        return this.list.stream().anyMatch(t -> t.getName().equals(name));
     }
 
 
